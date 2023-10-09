@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.unscramble.data.MAX_NO_OF_WORDS
 import com.example.unscramble.data.SCORE_INCREASE
 import com.example.unscramble.data.allWords
 import com.example.unscramble.data.allWordsSpanishTranslate
@@ -57,7 +58,7 @@ class GameViewModel : ViewModel() {
         return String(tempWord)
     }
 
-    private fun resetGame() {
+    fun resetGame() {
         usedWords.clear()// elimina todos los elementos de la colección
         _uiState.value = GameUiState(currentScrambledWord = pickRandomWordAndShuffle())
     }
@@ -84,13 +85,25 @@ class GameViewModel : ViewModel() {
     }
 
     private fun updateGameState(updateScore: Int) {
-        _uiState.update { gameUiState ->
-            gameUiState.copy(
-                isGuessedWordWrong = false,
-                currentScrambledWord = pickRandomWordAndShuffle(),
-                score = updateScore,
-                currentWordCount = gameUiState.currentWordCount.inc()
-            )
+        if (usedWords.size == MAX_NO_OF_WORDS) {
+            // Last round in the game, update isGameOver to true, don't pick a new word
+            _uiState.update { gameUiState ->
+                gameUiState.copy(
+                    score = updateScore,
+                    isGuessedWordWrong = false,
+                    isGameOver = true
+                )
+            }
+        } else {
+            // Normal round in the game
+            _uiState.update { gameUiState ->
+                gameUiState.copy(
+                    isGuessedWordWrong = false,
+                    currentScrambledWord = pickRandomWordAndShuffle(),
+                    score = updateScore,
+                    currentWordCount = gameUiState.currentWordCount.inc()
+                )
+            }
         }
     }
 
